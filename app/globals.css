@@ -39,7 +39,7 @@ header.top .date { color: var(--muted); font-size: 14px; }
 
 .card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid var(--line); }
 .card h2 { font-size: 19px; margin: 0 0 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.card .note { color: var(--muted); font-size: 12px; margin: 4px 0 14px; line-height: 1.5; }
+.note { color: var(--muted); font-size: 12px; margin: 4px 0 14px; line-height: 1.5; }
 
 .badge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 99px; }
 .badge.live { background: color-mix(in srgb, var(--green) 15%, transparent); color: var(--green); }
@@ -72,3 +72,37 @@ table.list td.num { text-align: right; white-space: nowrap; font-variant-numeric
 .review { padding: 10px 0; border-top: 1px solid var(--line); font-size: 14px; line-height: 1.5; }
 .review .meta { color: var(--muted); font-size: 12px; }
 .report { white-space: pre-wrap; font-family: inherit; font-size: 14px; line-height: 1.7; background: var(--tile); border-radius: 14px; padding: 14px 16px; margin: 0; }
+
+.card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.more { color: var(--blue); font-size: 14px; font-weight: 600; white-space: nowrap; padding: 6px 0 6px 12px; }
+a.card-link { display: block; }
+
+.menu { display: flex; gap: 10px; overflow-x: auto; padding: 4px 2px 16px; scrollbar-width: none; }
+.menu::-webkit-scrollbar { display: none; }
+.menu-item { flex: 0 0 auto; width: 92px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.menu-icon {
+  width: 64px; height: 64px; border-radius: 18px; background: var(--card); border: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: center; font-size: 30px;
+}
+.menu-item.active .menu-icon { border: 2px solid var(--blue); }
+.menu-label { font-size: 13px; text-align: center; color: var(--text); }
+.menu-item.active .menu-label { color: var(--blue); font-weight: 600; }
+
+.back { color: var(--blue); font-size: 17px; font-weight: 600; padding: 6px 0; }
+.page-title { font-size: 26px; margin: 4px 4px 12px; display: flex; align-items: center; gap: 8px; }
+
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.tab { padding: 8px 14px; border-radius: 99px; background: var(--tile); font-size: 14px; color: var(--muted); }
+.tab.active { background: var(--blue); color: #fff; font-weight: 600; }
+
+.share { display: grid; gap: 12px; }
+.share-top { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 6px; }
+.share-top .num { color: var(--muted); font-variant-numeric: tabular-nums; }
+.share-track { height: 8px; background: var(--tile); border-radius: 99px; overflow: hidden; }
+.share-fill { height: 100%; background: var(--blue); border-radius: 99px; }
+
+.rank-list { list-style: none; margin: 0; padding: 0; }
+.rank-list li { display: flex; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); font-size: 15px; }
+.rank-list .pos { width: 28px; height: 28px; border-radius: 8px; background: var(--tile); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; }
+.rank-list li.mine { color: var(--blue); font-weight: 700; }
+.rank-list li.mine .pos { background: var(--blue); color: #fff; }

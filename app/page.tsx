@@ -1,26 +1,8 @@
 import { store } from "@/lib/config";
 import { loadDashboard, summarize, won } from "@/lib/dashboard";
-import type { Mode } from "@/lib/types";
+import { Head, MenuBar, Stars } from "./ui";
 
 export const dynamic = "force-dynamic";
-
-const MODE_LABEL: Record<Mode, string> = { live: "실시간", demo: "샘플", error: "오류" };
-
-function Head({ title, mode, note }: { title: string; mode: Mode; note?: string }) {
-  return (
-    <>
-      <h2>
-        {title} <span className={`badge ${mode}`}>{MODE_LABEL[mode]}</span>
-      </h2>
-      {note && <p className="note">{note}</p>}
-    </>
-  );
-}
-
-function Stars({ n }: { n: number | null }) {
-  if (n === null) return null;
-  return <span className="stars">{"★".repeat(Math.round(n))}{"☆".repeat(5 - Math.round(n))}</span>;
-}
 
 export default async function Home() {
   const d = await loadDashboard();
@@ -40,10 +22,12 @@ export default async function Home() {
         </span>
       </header>
 
+      <MenuBar />
+
       <div className="grid">
         {/* 매출·입금 */}
         <section className="card">
-          <Head title="매출 · 입금" mode={sales.mode} note={sales.note} />
+          <Head href="/sales" title="매출 · 입금" mode={sales.mode} note={sales.note} />
           <div className="big">{won(s.today)}</div>
           <div className="sub">
             오늘 카드매출 · 어제보다{" "}
@@ -78,7 +62,7 @@ export default async function Home() {
         <div className="grid two">
           {/* 세금 */}
           <section className="card">
-            <Head title="세금" mode={tax.mode} note={tax.note} />
+            <Head href="/tax" title="세금" mode={tax.mode} note={tax.note} />
             <div className="tiles">
               <div className="tile"><div className="label">예상 부가세</div><div className="value">{won(tax.data.estimatedVat)}</div></div>
               <div className="tile"><div className="label">{tax.data.nextDeadline.label}</div><div className="value">{tax.data.nextDeadline.date}</div></div>
@@ -90,14 +74,14 @@ export default async function Home() {
 
           {/* 포스 */}
           <section className="card">
-            <Head title="포스" mode={pos.mode} note={pos.note} />
+            <Head href="/pos" title="포스" mode={pos.mode} note={pos.note} />
             <div className="tiles">
               <div className="tile"><div className="label">오늘 주문</div><div className="value">{pos.data.todayOrders}건</div></div>
               <div className="tile"><div className="label">객단가</div><div className="value">{won(pos.data.avgTicket)}</div></div>
             </div>
             <table className="list" style={{ marginTop: 12 }}>
               <tbody>
-                {pos.data.topItems.map((it, i) => (
+                {pos.data.topItems.slice(0, 3).map((it, i) => (
                   <tr key={it.name}><td>{i + 1}. {it.name}</td><td className="num">{it.qty}개</td></tr>
                 ))}
               </tbody>
@@ -107,7 +91,7 @@ export default async function Home() {
 
         {/* 계좌 */}
         <section className="card">
-          <Head title="계좌 입출금" mode={bank.mode} note={bank.note} />
+          <Head href="/bank" title="계좌 입출금" mode={bank.mode} note={bank.note} />
           <table className="list">
             <tbody>
               {bank.data.map((t, i) => (
@@ -123,7 +107,7 @@ export default async function Home() {
 
         {/* 검색순위 */}
         <section className="card">
-          <Head title="검색순위 · 키워드" mode={ranks.mode} note={ranks.note} />
+          <Head href="/ranks" title="검색순위 · 키워드" mode={ranks.mode} note={ranks.note} />
           <div className="tiles">
             {ranks.data.map((r) => (
               <div className="tile" key={r.keyword}>
@@ -141,7 +125,7 @@ export default async function Home() {
         <div className="grid two">
           {/* 리뷰 */}
           <section className="card">
-            <Head title="리뷰" mode={reviews.mode} note={reviews.note} />
+            <Head href="/reviews" title="리뷰" mode={reviews.mode} note={reviews.note} />
             <div className="tiles">
               <div className="tile">
                 <div className="label">이번 달 새 리뷰</div>
@@ -154,7 +138,7 @@ export default async function Home() {
               </div>
             </div>
             <div style={{ marginTop: 12 }}>
-              {rv.recent.map((r, i) => (
+              {rv.recent.slice(0, 3).map((r, i) => (
                 <div className="review" key={i}>
                   <div className="meta">
                     {r.source} · {r.author} · {r.date} <Stars n={r.rating} />
@@ -168,7 +152,7 @@ export default async function Home() {
 
           {/* SNS */}
           <section className="card">
-            <Head title="인스타그램" mode={sns.mode} note={sns.note} />
+            <Head href="/sns" title="인스타그램" mode={sns.mode} note={sns.note} />
             <div className="tiles">
               <div className="tile"><div className="label">어제 언급</div><div className="value">{sns.data.yesterdayMentions}건</div></div>
             </div>
@@ -187,7 +171,7 @@ export default async function Home() {
 
         {/* 주변 개업 */}
         <section className="card">
-          <Head title="주변 개업" mode={openings.mode} note={openings.note} />
+          <Head href="/openings" title="주변 개업" mode={openings.mode} note={openings.note} />
           {openings.data.length === 0 ? (
             <p className="sub">최근 개업한 곳이 없습니다.</p>
           ) : (

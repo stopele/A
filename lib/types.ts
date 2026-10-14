@@ -19,6 +19,7 @@ export interface CardSales {
   monthTotal: number;
   upcomingDeposit: { date: string; amount: number }[];
   days: DailySales[];
+  byCard: { name: string; amount: number }[]; // 이번 달 카드사별 매출
 }
 
 export interface BankTx {
@@ -33,18 +34,22 @@ export interface TaxSummary {
   cashReceiptTotal: number; // 현금영수증 매출
   estimatedVat: number;
   nextDeadline: { label: string; date: string };
+  invoices: { date: string; kind: "매출" | "매입" | "현금영수증"; partner: string; amount: number }[];
 }
 
 export interface PosSummary {
   todayOrders: number;
   avgTicket: number;
   topItems: { name: string; qty: number }[];
+  hourly: { hour: number; orders: number }[];
+  payments: { method: string; amount: number }[];
 }
 
 export interface KeywordRank {
   keyword: string;
   rank: number | null; // null = 노출 범위 밖
   topStore: string | null;
+  stores: string[]; // 검색 결과 상위 매장 (순서대로)
   monthlySearches: number | null;
 }
 

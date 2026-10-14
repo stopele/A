@@ -1,6 +1,6 @@
 // 지방행정 인허가 데이터(LOCALDATA)에서 최근 인허가된 음식점 중 매장 지역에 있는 곳을 찾는다.
 import { env, store } from "../config";
-import { demoOpenings } from "../demo";
+import { demoOpenings, ymd } from "../demo";
 import type { NewBusiness, SourceResult } from "../types";
 import { fetchJson, message } from "./http";
 
@@ -25,7 +25,7 @@ interface Response {
 }
 
 function compact(d: Date): string {
-  return d.toISOString().slice(0, 10).replaceAll("-", "");
+  return ymd(d).replaceAll("-", "");
 }
 
 function dashed(ymd: string): string {

@@ -25,7 +25,7 @@ async function localRank(keyword: string, id: string, secret: string) {
   });
   const titles = res.items.map((i) => stripTags(i.title));
   const idx = titles.findIndex((t) => t.replace(/\s/g, "").includes(store.name.replace(/\s/g, "")));
-  return { rank: idx >= 0 ? idx + 1 : null, topStore: titles[0] ?? null };
+  return { rank: idx >= 0 ? idx + 1 : null, topStore: titles[0] ?? null, stores: titles };
 }
 
 async function monthlySearches(keyword: string, apiKey: string, secret: string, customer: string) {
@@ -53,11 +53,11 @@ export async function getKeywordRanks(): Promise<SourceResult<KeywordRank[]>> {
   try {
     const data = await Promise.all(
       store.keywords.map(async (keyword) => {
-        const { rank, topStore } = await localRank(keyword, id, secret);
+        const { rank, topStore, stores } = await localRank(keyword, id, secret);
         const volume = adKey && adSecret && adCustomer
           ? await monthlySearches(keyword, adKey, adSecret, adCustomer).catch(() => null)
           : null;
-        return { keyword, rank, topStore, monthlySearches: volume };
+        return { keyword, rank, topStore, stores, monthlySearches: volume };
       }),
     );
     return {

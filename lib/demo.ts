@@ -35,7 +35,12 @@ export function demoCardSales(): CardSales {
     date: ymd(new Date(Date.now() + n * 86400_000)),
     amount: days[days.length - 1 - n].deposit,
   }));
-  return { today, yesterday, monthTotal, upcomingDeposit, days };
+  const shares: [string, number][] = [
+    ["신한카드", 0.24], ["KB국민카드", 0.19], ["삼성카드", 0.16], ["현대카드", 0.13],
+    ["BC카드", 0.1], ["롯데카드", 0.08], ["하나카드", 0.06], ["NH농협카드", 0.04],
+  ];
+  const byCard = shares.map(([name, r]) => ({ name, amount: Math.round((monthTotal * r) / 100) * 100 }));
+  return { today, yesterday, monthTotal, upcomingDeposit, days, byCard };
 }
 
 export function demoBank(): BankTx[] {
@@ -55,6 +60,15 @@ export function demoTax(): TaxSummary {
     cashReceiptTotal: 2_310_000,
     estimatedVat: 1_120_000,
     nextDeadline: { label: "부가세 확정신고", date: `${new Date().getFullYear() + 1}-01-25` },
+    invoices: [
+      { date: ymd(daysAgo(1)), kind: "매입", partner: "(주)한우유통", amount: 1_870_000 },
+      { date: ymd(daysAgo(3)), kind: "매입", partner: "진접청과", amount: 640_000 },
+      { date: ymd(daysAgo(4)), kind: "매출", partner: "남양주시청 (단체 회식)", amount: 850_000 },
+      { date: ymd(daysAgo(6)), kind: "매입", partner: "도시가스", amount: 412_000 },
+      { date: ymd(daysAgo(8)), kind: "현금영수증", partner: "개인 고객 23건", amount: 1_010_000 },
+      { date: ymd(daysAgo(11)), kind: "매출", partner: "진접초 학부모회", amount: 400_000 },
+      { date: ymd(daysAgo(13)), kind: "매입", partner: "(주)한우유통", amount: 2_150_000 },
+    ],
   };
 }
 
@@ -66,6 +80,19 @@ export function demoPos(): PosSummary {
       { name: "샤브샤브 무한리필", qty: 41 },
       { name: "소고기 추가", qty: 17 },
       { name: "칼국수 사리", qty: 15 },
+      { name: "음료/주류", qty: 38 },
+      { name: "죽 세트", qty: 11 },
+      { name: "어린이 메뉴", qty: 6 },
+    ],
+    hourly: [
+      { hour: 11, orders: 4 }, { hour: 12, orders: 11 }, { hour: 13, orders: 8 }, { hour: 14, orders: 3 },
+      { hour: 15, orders: 1 }, { hour: 16, orders: 2 }, { hour: 17, orders: 6 }, { hour: 18, orders: 12 },
+      { hour: 19, orders: 10 }, { hour: 20, orders: 5 }, { hour: 21, orders: 2 },
+    ],
+    payments: [
+      { method: "카드", amount: 1_008_000 },
+      { method: "간편결제", amount: 126_000 },
+      { method: "현금", amount: 75_600 },
     ],
   };
 }
@@ -74,7 +101,12 @@ export function demoRanks(): KeywordRank[] {
   return store.keywords.map((keyword, i) => ({
     keyword,
     rank: [3, 5, null][i % 3],
-    topStore: i === 0 ? "샤브앤 구이랑" : null,
+    topStore: ["샤브앤 구이랑", "진접 샤브마을", "진접 국밥"][i % 3],
+    stores: [
+      ["샤브앤 구이랑", "진접 샤브마을", store.name, "샤브향 진접점", "월남샤브 남양주"],
+      ["진접 샤브마을", "샤브앤 구이랑", "샤브향 진접점", "월남샤브 남양주", store.name],
+      ["진접 국밥", "진접 갈비", "카페 온새미로", "진접 돈까스", "샤브앤 구이랑"],
+    ][i % 3],
     monthlySearches: [2_340, 1_120, 18_600][i % 3],
   }));
 }
@@ -97,6 +129,11 @@ export function demoReviews(): ReviewSummary {
       { source: "네이버", author: "진접주민", rating: 5, text: "고기 질이 좋고 리필이 빨라요. 아이랑 가기 좋아요.", date: ymd(daysAgo(0)) },
       { source: "구글", author: "J. Kim", rating: 5, text: "가성비 최고 샤브샤브집", date: ymd(daysAgo(1)) },
       { source: "배달의민족", author: "배민고객", rating: 4, text: "포장도 깔끔했어요. 국물 양이 조금 아쉬움", date: ymd(daysAgo(2)) },
+      { source: "네이버", author: "오남동주부", rating: 5, text: "직원분들이 친절하시고 채소가 신선해요.", date: ymd(daysAgo(3)) },
+      { source: "네이버", author: "맛집탐방러", rating: 3, text: "주말 저녁에 대기가 너무 길었어요. 맛은 괜찮았습니다.", date: ymd(daysAgo(4)) },
+      { source: "구글", author: "Minji P.", rating: 5, text: "아이 의자랑 어린이 메뉴가 있어서 좋았어요", date: ymd(daysAgo(6)) },
+      { source: "배달의민족", author: "배민고객", rating: 2, text: "배달이 예상보다 30분 늦었어요.", date: ymd(daysAgo(8)) },
+      { source: "네이버", author: "진접직장인", rating: 5, text: "점심 특선 가성비 좋아요", date: ymd(daysAgo(10)) },
     ],
   };
 }
