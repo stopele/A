@@ -113,3 +113,46 @@ a.card-link { display: block; }
 .chip.active { background: var(--text); color: var(--bg); border-color: var(--text); }
 .badge.none { background: var(--tile); color: var(--muted); }
 .store-tag { font-size: 11px; font-weight: 600; color: var(--blue); background: color-mix(in srgb, var(--blue) 12%, transparent); padding: 2px 6px; border-radius: 6px; margin-right: 4px; }
+
+button.tab { border: 0; cursor: pointer; font: inherit; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
+.form-grid .wide { grid-column: 1 / -1; }
+.form-grid label { display: grid; gap: 6px; font-size: 13px; color: var(--muted); }
+input, select, textarea {
+  font: inherit; font-size: 16px; color: var(--text); background: var(--tile);
+  border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; width: 100%; min-width: 0;
+}
+.line-head, .line-row { display: grid; grid-template-columns: 1fr 110px 72px 120px 36px; gap: 8px; align-items: center; }
+.line-head, .price-head { font-size: 12px; color: var(--muted); padding: 8px 0; border-bottom: 1px solid var(--line); }
+.line-row { padding: 8px 0; border-bottom: 1px solid var(--line); }
+.line-row > span:first-child { display: grid; gap: 2px; }
+.line-row small { font-size: 11px; padding-left: 4px; }
+.line-row input, .price-row input { padding: 8px 10px; }
+.line-row .num { text-align: right; font-variant-numeric: tabular-nums; font-size: 14px; }
+.price-head, .price-row { display: grid; grid-template-columns: 1fr 90px 70px 120px 36px; gap: 8px; align-items: center; }
+.price-row { padding: 6px 0; }
+.icon-btn { border: 0; background: transparent; color: var(--muted); font-size: 16px; cursor: pointer; padding: 8px; }
+.total-row { display: flex; justify-content: space-between; font-size: 20px; font-weight: 700; padding-top: 16px; margin-top: 8px; border-top: 2px solid var(--text); }
+.form-actions { display: flex; gap: 10px; }
+.primary, .danger, .btn {
+  font: inherit; font-size: 16px; font-weight: 600; padding: 12px 20px; border-radius: 12px; border: 0; cursor: pointer;
+  display: inline-block; text-align: center;
+}
+.primary { background: var(--blue); color: #fff; flex: 1; }
+.btn { background: var(--blue); color: #fff; }
+.btn.secondary { background: var(--tile); color: var(--text); }
+.danger { background: color-mix(in srgb, var(--red) 12%, transparent); color: var(--red); }
+.primary:disabled, .danger:disabled { opacity: 0.4; cursor: not-allowed; }
+.status { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 99px; }
+.status.예약 { background: color-mix(in srgb, var(--blue) 14%, transparent); color: var(--blue); }
+.status.완료 { background: color-mix(in srgb, var(--green) 14%, transparent); color: var(--green); }
+.status.취소 { background: var(--tile); color: var(--muted); text-decoration: line-through; }
+@media (max-width: 640px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .line-head { display: none; }
+  .line-row { grid-template-columns: 1fr 1fr 36px; }
+  .line-row > span:first-child { grid-column: 1 / -1; }
+  .line-row .num { grid-column: 1 / 3; }
+  .price-head { display: none; }
+  .price-row { grid-template-columns: 1fr 1fr 36px; }
+}

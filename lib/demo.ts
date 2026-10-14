@@ -1,7 +1,7 @@
 // 키가 없을 때 화면을 채우는 매장별 샘플 데이터. 날짜·매장 기준으로 고정되어 새로고침해도 같은 값이 나온다.
 import type { Store } from "./config";
 import type {
-  BankTx, CardSales, KeywordRank, NewBusiness, PosSummary, ReviewSummary, SnsSummary, TaxSummary,
+  BankTx, CardSales, KeywordRank, PosSummary, ReviewSummary, SnsSummary, TaxSummary,
 } from "./types";
 
 function hash(s: string): number {
@@ -133,15 +133,6 @@ export function demoRanks(store: Store): KeywordRank[] {
       monthlySearches: Math.round((500 + rand() * 9_000) / 10) * 10,
     };
   });
-}
-
-export function demoOpenings(store: Store): NewBusiness[] {
-  const term = store.competitorTerms[0] ?? "식당";
-  return [
-    { nearStore: store.name, name: `${term}마을 진접점`, category: "일반음식점", address: `${store.region} 해밀예당1로`, openedOn: ymd(daysAgo(3 + (hash(store.id) % 5))), competitor: true },
-    { nearStore: store.name, name: "카페 온새미로", category: "휴게음식점", address: `${store.region} 금강로`, openedOn: ymd(daysAgo(9)), competitor: store.competitorTerms.includes("카페") },
-    { nearStore: store.name, name: "진접 돈까스", category: "일반음식점", address: `${store.region} 장현로`, openedOn: ymd(daysAgo(17)), competitor: false },
-  ];
 }
 
 const REVIEW_TEXTS: [number, string][] = [

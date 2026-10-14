@@ -8,8 +8,8 @@ const SECTIONS = [
   { path: "/sales", label: "매출 입금", icon: "💳", allOnly: false },
   { path: "/tax", label: "세금", icon: "🧾", allOnly: true },
   { path: "/pos", label: "포스", icon: "🖥️", allOnly: false },
+  { path: "/events", label: "행사 매출", icon: "💒", allOnly: false },
   { path: "/bank", label: "계좌", icon: "🏦", allOnly: true },
-  { path: "/openings", label: "주변 개업", icon: "🏪", allOnly: false },
   { path: "/sns", label: "SNS 관리", icon: "📸", allOnly: false },
   { path: "/ranks", label: "검색순위 관리", icon: "📍", allOnly: false },
   { path: "/reviews", label: "리뷰 관리", icon: "⭐", allOnly: false },
@@ -17,11 +17,13 @@ const SECTIONS = [
 
 export type Section = (typeof SECTIONS)[number]["path"] | "";
 
-// 세금·계좌는 법인 단위, 포스 없는 매장은 포스 메뉴 숨김
+// 세금·계좌는 법인 단위, 포스 없는 매장은 포스 메뉴 숨김, 행사 매출은 행사 매장만
 function sectionsFor(scope: Scope) {
   return SECTIONS.filter((s) => {
     if (s.allOnly && !scope.isAll) return false;
     if (s.path === "/pos" && !scope.isAll && scope.stores[0].pos === "none") return false;
+    // 행사 매출은 행사 매장(웨딩하우스)과 전체 화면에서만
+    if (s.path === "/events") return scope.stores.some((st) => st.eventSales);
     return true;
   });
 }

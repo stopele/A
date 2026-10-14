@@ -55,15 +55,6 @@ export interface KeywordRank {
   monthlySearches: number | null;
 }
 
-export interface NewBusiness {
-  nearStore?: string;
-  name: string;
-  category: string;
-  address: string;
-  openedOn: string;
-  competitor: boolean;
-}
-
 export interface Review {
   store?: string;
   source: string;

@@ -1,11 +1,11 @@
 // 화면 범위: 법인 전체("all") 또는 매장 하나. 전체일 때는 매장별 데이터를 합친다.
 import { company, findStore, stores, type Store } from "./config";
+import { getEvents } from "./sources/events";
 import { getCardSales, getPos } from "./sources/finance";
 import { getSns } from "./sources/instagram";
 import { getKeywordRanks } from "./sources/naver";
-import { getOpenings } from "./sources/openings";
 import { getReviews } from "./sources/reviews";
-import type { CardSales, KeywordRank, Mode, NewBusiness, PosSummary, ReviewSummary, SnsSummary, SourceResult } from "./types";
+import type { CardSales, KeywordRank, Mode, PosSummary, ReviewSummary, SnsSummary, SourceResult } from "./types";
 
 export interface Scope {
   id: string;
@@ -126,17 +126,10 @@ export async function loadSns(scope: Scope) {
   return { mode: combineMode(perStore.map((p) => p.mode)), note: combineNote(perStore), data, perStore };
 }
 
-export async function loadOpenings(scope: Scope): Promise<SourceResult<NewBusiness[]>> {
-  const perStore = await each(scope, getOpenings);
-  // 같은 지역 매장끼리는 결과가 겹치므로 상호+개업일로 중복 제거
-  const seen = new Map<string, NewBusiness>();
-  for (const p of perStore) {
-    for (const o of p.data) {
-      const key = `${o.name}|${o.openedOn}`;
-      const prev = seen.get(key);
-      seen.set(key, prev ? { ...prev, competitor: prev.competitor || o.competitor, nearStore: `${prev.nearStore}, ${o.nearStore}` } : o);
-    }
-  }
-  const data = [...seen.values()].sort((a, b) => b.openedOn.localeCompare(a.openedOn));
-  return { mode: combineMode(perStore.map((p) => p.mode)), note: combineNote(perStore), data };
+// 행사 매장만. 이번 달 행사와 다가오는 예약을 요약한다.
+export async function loadEvents(scope: Scope) {
+  const eventStores = scope.stores.filter((s) => s.eventSales);
+  if (!eventStores.length) return null;
+  const perStore = await Promise.all(eventStores.map(async (store) => ({ store, ...(await getEvents(store)) })));
+  return { mode: combineMode(perStore.map((p) => p.mode)), note: combineNote(perStore), perStore };
 }

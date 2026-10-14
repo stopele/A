@@ -22,7 +22,9 @@ export default async function PosPage({ params }: { params: Promise<{ scope: str
               {perStore.map((x) => (
                 <tr key={x.store.id}>
                   <td>
-                    {x.store.pos === "none" ? x.store.name : (
+                    {x.store.eventSales ? (
+                      <a href={`/${x.store.id}/events`} style={{ color: "var(--blue)", fontWeight: 600 }}>{x.store.name} · 행사 매출 ›</a>
+                    ) : x.store.pos === "none" ? x.store.name : (
                       <a href={`/${x.store.id}/pos`} style={{ color: "var(--blue)", fontWeight: 600 }}>{x.store.name} ›</a>
                     )}
                   </td>

@@ -12,7 +12,7 @@ const CODEF_NOTE = codefConfigured()
 const POS_NOTE: Record<Store["pos"], string> = {
   okpos: "오케이포스 연동은 OKPOS 오픈API 제휴 신청이 필요합니다.",
   tosspos: "토스포스 연동은 토스플레이스 개발자 API 신청이 필요합니다.",
-  none: "포스를 쓰지 않는 매장입니다. 매출은 카드매출로 집계합니다.",
+  none: "포스를 쓰지 않는 매장입니다. 웨딩·연회 매출은 '행사 매출' 메뉴에서 행사별로 입력합니다.",
 };
 
 export async function getCardSales(store: Store): Promise<SourceResult<CardSales>> {

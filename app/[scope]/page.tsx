@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { POS_LABEL } from "@/lib/config";
 import { loadDashboard, summarize, won } from "@/lib/dashboard";
+import { ymd } from "@/lib/demo";
+import { EVENT_TYPE_LABEL, eventStats, eventTotal } from "@/lib/events";
 import { Bars, Head, Stars, TopBar, getScope, mmdd } from "@/app/ui";
 
 export const dynamic = "force-dynamic";
@@ -8,7 +10,8 @@ export const dynamic = "force-dynamic";
 export default async function Home({ params }: { params: Promise<{ scope: string }> }) {
   const scope = await getScope(params);
   const d = await loadDashboard(scope);
-  const { sales, pos, ranks, openings, reviews, sns, tax, bank } = d;
+  const { sales, pos, events, ranks, reviews, sns, tax, bank } = d;
+  const today = ymd(new Date());
   const s = sales.data;
   const diff = s.today - s.yesterday;
   const rv = reviews.data;
@@ -97,6 +100,35 @@ export default async function Home({ params }: { params: Promise<{ scope: string
           )}
         </div>
 
+        {events?.perStore.map((ev) => {
+          const st = eventStats(ev.data.filter((e) => e.date.startsWith(today.slice(0, 7))));
+          const upcoming = ev.data.filter((e) => e.date >= today && e.status === "예약").sort((a, b) => a.date.localeCompare(b.date));
+          return (
+            <section className="card" key={ev.store.id}>
+              <Head href={`/${ev.store.id}/events`} title={scope.isAll ? `${ev.store.name} 행사 매출` : "행사 매출"} mode={ev.mode} note={ev.note} />
+              <div className="tiles">
+                <div className="tile"><div className="label">이번 달 행사 매출</div><div className="value">{won(st.total)}</div></div>
+                <div className="tile"><div className="label">이번 달 행사</div><div className="value">{st.count}건</div></div>
+                <div className="tile"><div className="label">이번 달 하객</div><div className="value">{st.guests.toLocaleString("ko-KR")}명</div></div>
+              </div>
+              <p className="note" style={{ marginTop: 14 }}>다가오는 예약</p>
+              {upcoming.length === 0 ? <p className="sub">예약된 행사가 없습니다.</p> : (
+                <table className="list">
+                  <tbody>
+                    {upcoming.slice(0, 4).map((e) => (
+                      <tr key={e.id}>
+                        <td style={{ color: "var(--muted)", width: 70 }}>{mmdd(e.date)}</td>
+                        <td><Link href={`/${ev.store.id}/events/${e.id}`}>{e.title}</Link> <span className="sub" style={{ fontSize: 12 }}>{EVENT_TYPE_LABEL[e.type]}</span></td>
+                        <td className="num">{won(eventTotal(e))}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </section>
+          );
+        })}
+
         {bank && (
           <section className="card">
             <Head href={`${base}/bank`} title="법인 계좌 입출금" mode={bank.mode} note={bank.note} />
@@ -173,26 +205,6 @@ export default async function Home({ params }: { params: Promise<{ scope: string
           </section>
         </div>
 
-        <section className="card">
-          <Head href={`${base}/openings`} title="주변 개업" mode={openings.mode} note={openings.note} />
-          {openings.data.length === 0 ? (
-            <p className="sub">최근 개업한 곳이 없습니다.</p>
-          ) : (
-            <table className="list">
-              <tbody>
-                {openings.data.slice(0, 5).map((o) => (
-                  <tr key={o.name + o.openedOn}>
-                    <td style={{ color: "var(--muted)", width: 70 }}>{mmdd(o.openedOn)}</td>
-                    <td>
-                      {o.name} {o.competitor && <span className="warn">경쟁</span>}
-                      <div className="sub" style={{ fontSize: 12 }}>{o.category} · {o.address}</div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </section>
 
         <section className="card">
           <h2>오늘의 리포트</h2>
