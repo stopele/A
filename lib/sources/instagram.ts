@@ -1,6 +1,6 @@
 // 인스타그램 Graph API 해시태그 검색으로 최근 24시간 게시물을 모은다.
 // 비즈니스/크리에이터 계정과 페이스북 앱 토큰이 필요하다.
-import { env, store } from "../config";
+import { env, type Store } from "../config";
 import { demoSns, ymd } from "../demo";
 import type { SnsPost, SnsSummary, SourceResult } from "../types";
 import { fetchJson, message } from "./http";
@@ -14,11 +14,11 @@ interface Media {
   timestamp: string;
 }
 
-export async function getSns(): Promise<SourceResult<SnsSummary>> {
+export async function getSns(store: Store): Promise<SourceResult<SnsSummary>> {
   const token = env("INSTAGRAM_ACCESS_TOKEN");
   const userId = env("INSTAGRAM_USER_ID");
   if (!token || !userId) {
-    return { mode: "demo", data: demoSns(), note: "INSTAGRAM_ACCESS_TOKEN / INSTAGRAM_USER_ID 설정 시 실제 해시태그 게시물이 연동됩니다." };
+    return { mode: "demo", data: demoSns(store), note: "INSTAGRAM_ACCESS_TOKEN / INSTAGRAM_USER_ID 설정 시 실제 해시태그 게시물이 연동됩니다." };
   }
   try {
     const seen = new Map<string, Media>();
@@ -42,7 +42,8 @@ export async function getSns(): Promise<SourceResult<SnsSummary>> {
         if (!store.hashtags.includes(tag)) tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
       }
     }
-    const recent: SnsPost[] = posts.slice(0, 5).map((p) => ({
+    const recent: SnsPost[] = posts.slice(0, 10).map((p) => ({
+      store: store.name,
       caption: (p.caption ?? "").slice(0, 80),
       url: p.permalink,
       date: ymd(new Date(p.timestamp)),
@@ -57,6 +58,6 @@ export async function getSns(): Promise<SourceResult<SnsSummary>> {
       note: `#${store.hashtags.join(" #")} 최근 게시물 기준`,
     };
   } catch (err) {
-    return { mode: "error", data: demoSns(), note: `인스타그램 API 오류: ${message(err)}` };
+    return { mode: "error", data: demoSns(store), note: `인스타그램 API 오류: ${message(err)}` };
   }
 }

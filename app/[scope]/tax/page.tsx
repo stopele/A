@@ -1,7 +1,8 @@
 import { won } from "@/lib/dashboard";
 import { ymd } from "@/lib/demo";
 import { getTax } from "@/lib/sources/finance";
-import { DetailPage, Tabs, mmdd } from "../ui";
+import { redirect } from "next/navigation";
+import { DetailPage, Tabs, getScope, mmdd } from "@/app/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,10 @@ function vatSchedule(year: number) {
   ];
 }
 
-export default async function TaxPage({ searchParams }: { searchParams: Promise<{ filter?: string }> }) {
+export default async function TaxPage({ params, searchParams }: { params: Promise<{ scope: string }>; searchParams: Promise<{ filter?: string }> }) {
+  const scope = await getScope(params);
+  // 세금·계좌는 법인 단위라 전체 화면에서만 본다
+  if (!scope.isAll) redirect(`/all/tax`);
   const { filter = "전체" } = await searchParams;
   const { mode, note, data: t } = await getTax();
   const today = ymd(new Date());
@@ -26,7 +30,7 @@ export default async function TaxPage({ searchParams }: { searchParams: Promise<
   const salesVat = Math.round((t.salesInvoiceTotal + t.cashReceiptTotal) / 11);
   const purchaseVat = Math.round(t.purchaseInvoiceTotal / 11);
   return (
-    <DetailPage href="/tax" title="세금" mode={mode} note={note}>
+    <DetailPage scope={scope} section="/tax" title="세금 (법인)" mode={mode} note={note}>
       <section className="card">
         <h2>예상 부가세</h2>
         <div className="big" style={{ marginTop: 8 }}>{won(t.estimatedVat)}</div>
@@ -55,7 +59,7 @@ export default async function TaxPage({ searchParams }: { searchParams: Promise<
       <section className="card">
         <h2>세금계산서 · 현금영수증</h2>
         <Tabs
-          base="/tax"
+          base={`/${scope.id}/tax`}
           current={filter}
           items={["전체", "매출", "매입", "현금영수증"].map((v) => ({ value: v, label: v }))}
         />

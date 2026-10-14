@@ -106,3 +106,10 @@ a.card-link { display: block; }
 .rank-list .pos { width: 28px; height: 28px; border-radius: 8px; background: var(--tile); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; }
 .rank-list li.mine { color: var(--blue); font-weight: 700; }
 .rank-list li.mine .pos { background: var(--blue); color: #fff; }
+
+.switcher { display: flex; gap: 8px; overflow-x: auto; padding: 0 2px 14px; scrollbar-width: none; }
+.switcher::-webkit-scrollbar { display: none; }
+.chip { flex: 0 0 auto; padding: 9px 16px; border-radius: 99px; background: var(--card); border: 1px solid var(--line); font-size: 15px; font-weight: 600; }
+.chip.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+.badge.none { background: var(--tile); color: var(--muted); }
+.store-tag { font-size: 11px; font-weight: 600; color: var(--blue); background: color-mix(in srgb, var(--blue) 12%, transparent); padding: 2px 6px; border-radius: 6px; margin-right: 4px; }

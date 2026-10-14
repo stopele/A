@@ -1,4 +1,5 @@
-export type Mode = "live" | "demo" | "error";
+// none: 이 매장에는 해당 없음 (예: 포스 미사용)
+export type Mode = "live" | "demo" | "error" | "none";
 
 export interface SourceResult<T> {
   mode: Mode;
@@ -46,6 +47,7 @@ export interface PosSummary {
 }
 
 export interface KeywordRank {
+  store?: string;
   keyword: string;
   rank: number | null; // null = 노출 범위 밖
   topStore: string | null;
@@ -54,6 +56,7 @@ export interface KeywordRank {
 }
 
 export interface NewBusiness {
+  nearStore?: string;
   name: string;
   category: string;
   address: string;
@@ -62,6 +65,7 @@ export interface NewBusiness {
 }
 
 export interface Review {
+  store?: string;
   source: string;
   author: string;
   rating: number | null;
@@ -78,6 +82,7 @@ export interface ReviewSummary {
 }
 
 export interface SnsPost {
+  store?: string;
   caption: string;
   url: string;
   date: string;

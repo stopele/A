@@ -1,17 +1,21 @@
 import { won } from "@/lib/dashboard";
 import { getBank } from "@/lib/sources/finance";
-import { DetailPage, Tabs, mmdd } from "../ui";
+import { redirect } from "next/navigation";
+import { DetailPage, Tabs, getScope, mmdd } from "@/app/ui";
 
 export const dynamic = "force-dynamic";
 
-export default async function BankPage({ searchParams }: { searchParams: Promise<{ filter?: string }> }) {
+export default async function BankPage({ params, searchParams }: { params: Promise<{ scope: string }>; searchParams: Promise<{ filter?: string }> }) {
+  const scope = await getScope(params);
+  // 세금·계좌는 법인 단위라 전체 화면에서만 본다
+  if (!scope.isAll) redirect(`/all/bank`);
   const { filter = "all" } = await searchParams;
   const { mode, note, data } = await getBank();
   const inflow = data.filter((t) => t.amount > 0).reduce((a, t) => a + t.amount, 0);
   const outflow = data.filter((t) => t.amount < 0).reduce((a, t) => a + t.amount, 0);
   const rows = data.filter((t) => (filter === "in" ? t.amount > 0 : filter === "out" ? t.amount < 0 : true));
   return (
-    <DetailPage href="/bank" title="계좌 입출금" mode={mode} note={note}>
+    <DetailPage scope={scope} section="/bank" title="법인 계좌 입출금" mode={mode} note={note}>
       <section className="card">
         <div className="tiles">
           <div className="tile"><div className="label">입금 합계</div><div className="value up">+{won(inflow)}</div></div>
@@ -20,7 +24,7 @@ export default async function BankPage({ searchParams }: { searchParams: Promise
         </div>
       </section>
       <section className="card">
-        <Tabs base="/bank" current={filter} items={[
+        <Tabs base={`/${scope.id}/bank`} current={filter} items={[
           { value: "all", label: "전체" }, { value: "in", label: "입금" }, { value: "out", label: "출금" },
         ]} />
         <table className="list">

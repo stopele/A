@@ -1,5 +1,5 @@
 // 지방행정 인허가 데이터(LOCALDATA)에서 최근 인허가된 음식점 중 매장 지역에 있는 곳을 찾는다.
-import { env, store } from "../config";
+import { env, type Store } from "../config";
 import { demoOpenings, ymd } from "../demo";
 import type { NewBusiness, SourceResult } from "../types";
 import { fetchJson, message } from "./http";
@@ -33,10 +33,10 @@ function dashed(ymd: string): string {
   return `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}`;
 }
 
-export async function getOpenings(): Promise<SourceResult<NewBusiness[]>> {
+export async function getOpenings(store: Store): Promise<SourceResult<NewBusiness[]>> {
   const key = env("LOCALDATA_API_KEY");
   if (!key) {
-    return { mode: "demo", data: demoOpenings(), note: "LOCALDATA_API_KEY 설정 시 실제 인허가 데이터가 연동됩니다." };
+    return { mode: "demo", data: demoOpenings(store), note: "LOCALDATA_API_KEY 설정 시 실제 인허가 데이터가 연동됩니다." };
   }
   const base = env("LOCALDATA_API_URL") ?? DEFAULT_URL;
   const end = new Date();
@@ -56,6 +56,7 @@ export async function getOpenings(): Promise<SourceResult<NewBusiness[]>> {
         const name = r.bplcNm ?? "(이름 없음)";
         const category = r.uptaeNm || svc.label;
         found.push({
+          nearStore: store.name,
           name,
           category,
           address,
@@ -67,6 +68,6 @@ export async function getOpenings(): Promise<SourceResult<NewBusiness[]>> {
     found.sort((a, b) => b.openedOn.localeCompare(a.openedOn));
     return { mode: "live", data: found, note: `${area} 최근 30일 인허가 기준` };
   } catch (err) {
-    return { mode: "error", data: demoOpenings(), note: `인허가 API 오류: ${message(err)}` };
+    return { mode: "error", data: demoOpenings(store), note: `인허가 API 오류: ${message(err)}` };
   }
 }

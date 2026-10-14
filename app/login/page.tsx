@@ -1,11 +1,11 @@
-import { store } from "@/lib/config";
+import { company } from "@/lib/config";
 
 export default async function Login({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
   return (
     <main className="wrap" style={{ maxWidth: 420, paddingTop: 80 }}>
       <section className="card">
-        <h2>{store.name} 가게 관리</h2>
+        <h2>{company.name} 가게 관리</h2>
         <p className="note">비밀번호를 입력하세요.</p>
         <form method="post" action="/api/login" style={{ display: "grid", gap: 12 }}>
           <input

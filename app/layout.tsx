@@ -1,10 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { store } from "@/lib/config";
+import { company } from "@/lib/config";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: `${store.name} 가게 관리`,
-  appleWebApp: { capable: true, title: store.name, statusBarStyle: "default" },
+  title: `${company.name} 가게 관리`,
+  appleWebApp: { capable: true, title: company.name, statusBarStyle: "default" },
   icons: { icon: "/icon.svg", apple: "/icon.svg" },
 };
 

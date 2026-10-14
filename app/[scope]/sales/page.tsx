@@ -1,6 +1,6 @@
 import { won } from "@/lib/dashboard";
-import { getCardSales } from "@/lib/sources/finance";
-import { Bars, DetailPage, ShareList, mmdd } from "../ui";
+import { loadSales } from "@/lib/scope";
+import { Bars, DetailPage, ShareList, getScope, mmdd } from "@/app/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -8,8 +8,9 @@ const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 // 날짜 문자열 자체의 요일 (서버 시간대와 무관)
 const weekday = (date: string) => new Date(`${date}T00:00:00Z`).getUTCDay();
 
-export default async function SalesPage() {
-  const { mode, note, data: s } = await getCardSales();
+export default async function SalesPage({ params }: { params: Promise<{ scope: string }> }) {
+  const scope = await getScope(params);
+  const { mode, note, data: s, perStore } = await loadSales(scope);
   const fee = (d: { amount: number; deposit: number }) => d.amount - d.deposit;
   // 요일별 평균
   const byWeekday = WEEKDAYS.map((label, wd) => {
@@ -18,7 +19,7 @@ export default async function SalesPage() {
   });
   const best = [...byWeekday].sort((a, b) => b.value - a.value)[0];
   return (
-    <DetailPage href="/sales" title="매출 · 입금" mode={mode} note={note}>
+    <DetailPage scope={scope} section="/sales" title="매출 · 입금" mode={mode} note={note}>
       <section className="card">
         <div className="tiles">
           <div className="tile"><div className="label">오늘 매출</div><div className="value">{won(s.today)}</div></div>
@@ -28,6 +29,29 @@ export default async function SalesPage() {
         </div>
         <Bars values={s.days.map((d) => d.amount)} labels={s.days.map((d) => String(Number(d.date.slice(8))))} />
       </section>
+
+      {scope.isAll && (
+        <section className="card">
+          <h2>매장별 비교</h2>
+          <p className="note">이번 달 누적 매출 비중</p>
+          <ShareList rows={perStore.map((p) => ({ label: p.store.name, value: p.data.monthTotal }))} format={won} />
+          <table className="list" style={{ marginTop: 16 }}>
+            <thead>
+              <tr className="sub"><td>매장</td><td className="num">오늘</td><td className="num">어제</td><td className="num">이번 달</td></tr>
+            </thead>
+            <tbody>
+              {perStore.map((p) => (
+                <tr key={p.store.id}>
+                  <td><a href={`/${p.store.id}/sales`} style={{ color: "var(--blue)", fontWeight: 600 }}>{p.store.name} ›</a></td>
+                  <td className="num">{won(p.data.today)}</td>
+                  <td className="num">{won(p.data.yesterday)}</td>
+                  <td className="num">{won(p.data.monthTotal)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
 
       <section className="card">
         <h2>입금 예정</h2>

@@ -1,19 +1,38 @@
 import Link from "next/link";
-import { store } from "@/lib/config";
+import { notFound } from "next/navigation";
+import { stores } from "@/lib/config";
+import { ALL, resolveScope, type Scope } from "@/lib/scope";
 import type { Mode } from "@/lib/types";
 
-export const MENU = [
-  { href: "/sales", label: "매출 입금", icon: "💳" },
-  { href: "/tax", label: "세금", icon: "🧾" },
-  { href: "/pos", label: "포스", icon: "🖥️" },
-  { href: "/bank", label: "계좌", icon: "🏦" },
-  { href: "/openings", label: "주변 개업", icon: "🏪" },
-  { href: "/sns", label: "SNS 관리", icon: "📸" },
-  { href: "/ranks", label: "검색순위 관리", icon: "📍" },
-  { href: "/reviews", label: "리뷰 관리", icon: "⭐" },
+const SECTIONS = [
+  { path: "/sales", label: "매출 입금", icon: "💳", allOnly: false },
+  { path: "/tax", label: "세금", icon: "🧾", allOnly: true },
+  { path: "/pos", label: "포스", icon: "🖥️", allOnly: false },
+  { path: "/bank", label: "계좌", icon: "🏦", allOnly: true },
+  { path: "/openings", label: "주변 개업", icon: "🏪", allOnly: false },
+  { path: "/sns", label: "SNS 관리", icon: "📸", allOnly: false },
+  { path: "/ranks", label: "검색순위 관리", icon: "📍", allOnly: false },
+  { path: "/reviews", label: "리뷰 관리", icon: "⭐", allOnly: false },
 ] as const;
 
-const MODE_LABEL: Record<Mode, string> = { live: "실시간", demo: "샘플", error: "오류" };
+export type Section = (typeof SECTIONS)[number]["path"] | "";
+
+// 세금·계좌는 법인 단위, 포스 없는 매장은 포스 메뉴 숨김
+function sectionsFor(scope: Scope) {
+  return SECTIONS.filter((s) => {
+    if (s.allOnly && !scope.isAll) return false;
+    if (s.path === "/pos" && !scope.isAll && scope.stores[0].pos === "none") return false;
+    return true;
+  });
+}
+
+export async function getScope(params: Promise<{ scope: string }>): Promise<Scope> {
+  const scope = resolveScope((await params).scope);
+  if (!scope) notFound();
+  return scope;
+}
+
+const MODE_LABEL: Record<Mode, string> = { live: "실시간", demo: "샘플", error: "오류", none: "해당 없음" };
 
 export function Badge({ mode }: { mode: Mode }) {
   return <span className={`badge ${mode}`}>{MODE_LABEL[mode]}</span>;
@@ -40,11 +59,29 @@ export function Stars({ n }: { n: number | null }) {
   return <span className="stars">{"★".repeat(r)}{"☆".repeat(5 - r)}</span>;
 }
 
-export function MenuBar({ active }: { active?: string }) {
+export function StoreSwitcher({ scope, section = "" }: { scope: Scope; section?: Section }) {
+  const options = [{ id: ALL, name: "전체" }, ...stores.map((s) => ({ id: s.id, name: s.name }))];
+  return (
+    <nav className="switcher">
+      {options.map((o) => {
+        // 법인 전용 메뉴(세금·계좌)에서 매장으로 바꾸면 매장 홈으로 간다
+        const target = resolveScope(o.id)!;
+        const keep = section && sectionsFor(target).some((s) => s.path === section);
+        return (
+          <Link key={o.id} href={`/${o.id}${keep ? section : ""}`} className={`chip ${scope.id === o.id ? "active" : ""}`}>
+            {o.name}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
+export function MenuBar({ scope, active }: { scope: Scope; active?: Section }) {
   return (
     <nav className="menu">
-      {MENU.map((m) => (
-        <Link key={m.href} href={m.href} className={`menu-item ${active === m.href ? "active" : ""}`}>
+      {sectionsFor(scope).map((m) => (
+        <Link key={m.path} href={`/${scope.id}${m.path}`} className={`menu-item ${active === m.path ? "active" : ""}`}>
           <span className="menu-icon">{m.icon}</span>
           <span className="menu-label">{m.label}</span>
         </Link>
@@ -53,16 +90,32 @@ export function MenuBar({ active }: { active?: string }) {
   );
 }
 
-// 상세 화면 공통 틀: 뒤로가기 + 제목 + 메뉴
+export function TopBar({ scope, section }: { scope: Scope; section: Section }) {
+  return (
+    <>
+      <header className="top">
+        {section ? (
+          <Link href={`/${scope.id}`} className="back">‹ {scope.label}</Link>
+        ) : (
+          <h1>{scope.label}</h1>
+        )}
+        <span className="date">
+          {new Date().toLocaleDateString("ko-KR", { month: "long", day: "numeric", weekday: "short", timeZone: "Asia/Seoul" })}
+        </span>
+      </header>
+      <StoreSwitcher scope={scope} section={section} />
+      <MenuBar scope={scope} active={section} />
+    </>
+  );
+}
+
+// 상세 화면 공통 틀
 export function DetailPage({
-  href, title, mode, note, children,
-}: { href: string; title: string; mode: Mode; note?: string; children: React.ReactNode }) {
+  scope, section, title, mode, note, children,
+}: { scope: Scope; section: Section; title: string; mode: Mode; note?: string; children: React.ReactNode }) {
   return (
     <main className="wrap">
-      <header className="top">
-        <Link href="/" className="back">‹ {store.name}</Link>
-      </header>
-      <MenuBar active={href} />
+      <TopBar scope={scope} section={section} />
       <h1 className="page-title">
         {title} <Badge mode={mode} />
       </h1>

@@ -1,6 +1,6 @@
 // 네이버 검색 API(지역 검색)로 키워드별 노출 순위를, 검색광고 API로 월간 검색량을 가져온다.
 import { createHmac } from "node:crypto";
-import { env, store } from "../config";
+import { env, isSameStore, type Store } from "../config";
 import { demoRanks } from "../demo";
 import type { KeywordRank, SourceResult } from "../types";
 import { fetchJson, message, stripTags } from "./http";
@@ -18,13 +18,13 @@ function count(v: number | string): number {
   return typeof v === "number" ? v : 5;
 }
 
-async function localRank(keyword: string, id: string, secret: string) {
+async function localRank(store: Store, keyword: string, id: string, secret: string) {
   const url = `https://openapi.naver.com/v1/search/local.json?query=${encodeURIComponent(keyword)}&display=5`;
   const res = await fetchJson<LocalSearch>(url, {
     headers: { "X-Naver-Client-Id": id, "X-Naver-Client-Secret": secret },
   });
   const titles = res.items.map((i) => stripTags(i.title));
-  const idx = titles.findIndex((t) => t.replace(/\s/g, "").includes(store.name.replace(/\s/g, "")));
+  const idx = titles.findIndex((t) => isSameStore(store, t));
   return { rank: idx >= 0 ? idx + 1 : null, topStore: titles[0] ?? null, stores: titles };
 }
 
@@ -41,11 +41,11 @@ async function monthlySearches(keyword: string, apiKey: string, secret: string, 
   return hit ? count(hit.monthlyPcQcCnt) + count(hit.monthlyMobileQcCnt) : null;
 }
 
-export async function getKeywordRanks(): Promise<SourceResult<KeywordRank[]>> {
+export async function getKeywordRanks(store: Store): Promise<SourceResult<KeywordRank[]>> {
   const id = env("NAVER_CLIENT_ID");
   const secret = env("NAVER_CLIENT_SECRET");
   if (!id || !secret) {
-    return { mode: "demo", data: demoRanks(), note: "NAVER_CLIENT_ID / NAVER_CLIENT_SECRET 설정 시 실제 순위로 바뀝니다." };
+    return { mode: "demo", data: demoRanks(store), note: "NAVER_CLIENT_ID / NAVER_CLIENT_SECRET 설정 시 실제 순위로 바뀝니다." };
   }
   const adKey = env("NAVER_AD_API_KEY");
   const adSecret = env("NAVER_AD_SECRET");
@@ -53,11 +53,11 @@ export async function getKeywordRanks(): Promise<SourceResult<KeywordRank[]>> {
   try {
     const data = await Promise.all(
       store.keywords.map(async (keyword) => {
-        const { rank, topStore, stores } = await localRank(keyword, id, secret);
+        const { rank, topStore, stores } = await localRank(store, keyword, id, secret);
         const volume = adKey && adSecret && adCustomer
           ? await monthlySearches(keyword, adKey, adSecret, adCustomer).catch(() => null)
           : null;
-        return { keyword, rank, topStore, stores, monthlySearches: volume };
+        return { store: store.name, keyword, rank, topStore, stores, monthlySearches: volume };
       }),
     );
     return {
@@ -66,6 +66,6 @@ export async function getKeywordRanks(): Promise<SourceResult<KeywordRank[]>> {
       note: "네이버 지역검색 API는 상위 5개까지만 제공하므로 6위 이하는 '순위 밖'으로 표시됩니다.",
     };
   } catch (err) {
-    return { mode: "error", data: demoRanks(), note: `네이버 API 오류: ${message(err)}` };
+    return { mode: "error", data: demoRanks(store), note: `네이버 API 오류: ${message(err)}` };
   }
 }

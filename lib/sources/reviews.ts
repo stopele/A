@@ -1,6 +1,6 @@
 // 구글 지도(Places API New)에서 평점과 최근 리뷰를 가져온다.
 // 네이버 플레이스·배달앱 리뷰는 공식 API가 없어 샘플로 남겨둔다.
-import { env, store } from "../config";
+import { env, type Store } from "../config";
 import { demoReviews, ymd } from "../demo";
 import type { ReviewSummary, SourceResult } from "../types";
 import { fetchJson, message } from "./http";
@@ -18,10 +18,10 @@ interface PlacesSearch {
   }[];
 }
 
-export async function getReviews(): Promise<SourceResult<ReviewSummary>> {
+export async function getReviews(store: Store): Promise<SourceResult<ReviewSummary>> {
   const key = env("GOOGLE_MAPS_API_KEY");
   if (!key) {
-    return { mode: "demo", data: demoReviews(), note: "GOOGLE_MAPS_API_KEY 설정 시 구글 지도 리뷰가 연동됩니다." };
+    return { mode: "demo", data: demoReviews(store), note: "GOOGLE_MAPS_API_KEY 설정 시 구글 지도 리뷰가 연동됩니다." };
   }
   try {
     const res = await fetchJson<PlacesSearch>("https://places.googleapis.com/v1/places:searchText", {
@@ -36,6 +36,7 @@ export async function getReviews(): Promise<SourceResult<ReviewSummary>> {
     const place = res.places?.[0];
     if (!place) throw new Error(`'${store.name}' 매장을 구글 지도에서 찾지 못했습니다.`);
     const recent = (place.reviews ?? []).map((r) => ({
+      store: store.name,
       source: "구글",
       author: r.authorAttribution?.displayName ?? "익명",
       rating: r.rating ?? null,
@@ -56,6 +57,6 @@ export async function getReviews(): Promise<SourceResult<ReviewSummary>> {
       note: `구글 리뷰 기준 (이번 달 최근 리뷰 ${recent.filter((r) => r.date.startsWith(thisMonth)).length}건 표시). 네이버·배달앱 리뷰는 공식 API가 없습니다.`,
     };
   } catch (err) {
-    return { mode: "error", data: demoReviews(), note: `구글 API 오류: ${message(err)}` };
+    return { mode: "error", data: demoReviews(store), note: `구글 API 오류: ${message(err)}` };
   }
 }
