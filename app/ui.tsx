@@ -6,6 +6,8 @@ import type { Mode } from "@/lib/types";
 
 const SECTIONS = [
   { path: "/sales", label: "매출 입금", icon: "💳", allOnly: false },
+  { path: "/calendar", label: "매출 캘린더", icon: "📅", allOnly: false },
+  { path: "/expenses", label: "비용 · 손익", icon: "💸", allOnly: false },
   { path: "/tax", label: "세금", icon: "🧾", allOnly: true },
   { path: "/pos", label: "포스", icon: "🖥️", allOnly: false },
   { path: "/events", label: "행사 매출", icon: "💒", allOnly: false },
@@ -134,7 +136,7 @@ export function Tabs({ base, current, items }: { base: string; current: string; 
       {items.map((t) => (
         <Link
           key={t.value}
-          href={t.value === items[0].value ? base : `${base}?filter=${encodeURIComponent(t.value)}`}
+          href={t.value === items[0].value ? base : `${base}${base.includes("?") ? "&" : "?"}filter=${encodeURIComponent(t.value)}`}
           className={`tab ${current === t.value ? "active" : ""}`}
         >
           {t.label}

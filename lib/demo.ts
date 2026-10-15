@@ -31,15 +31,23 @@ const today = () => ymd(new Date());
 const rng = (store: Store, salt = "") => seeded(Number(today().replaceAll("-", "")) + hash(store.id + salt));
 const round100 = (n: number) => Math.round(n / 100) * 100;
 
-export function demoCardSales(store: Store): CardSales {
-  const rand = rng(store);
-  const days = Array.from({ length: 14 }, (_, i) => {
+// 특정 날짜의 샘플 카드매출 (날짜·매장마다 고정)
+export function demoDailyAmount(store: Store, date: string): number {
+  const rand = seeded(Number(date.replaceAll("-", "")) + hash(store.id));
+  rand();
+  const wd = new Date(`${date}T00:00:00Z`).getUTCDay();
+  const weekend = wd === 0 || wd === 6;
+  if (store.pos === "none") {
     // 웨딩홀은 주말에 몰린다
+    return round100((weekend ? 2_400_000 : 150_000) * store.scale * (0.6 + rand() * 0.8));
+  }
+  return round100((300_000 + rand() * 900_000) * store.scale * (weekend ? 1.25 : 1));
+}
+
+export function demoCardSales(store: Store): CardSales {
+  const days = Array.from({ length: 14 }, (_, i) => {
     const date = ymd(daysAgo(13 - i));
-    const wd = new Date(`${date}T00:00:00Z`).getUTCDay();
-    const weekend = wd === 0 || wd === 6;
-    const base = store.pos === "none" ? (weekend ? 2_400_000 : 150_000) : 300_000 + rand() * 900_000;
-    const amount = round100(base * store.scale * (store.pos === "none" ? 0.6 + rand() * 0.8 : 1));
+    const amount = demoDailyAmount(store, date);
     return { date, amount, deposit: Math.round(amount * 0.978) };
   });
   const t = days[days.length - 1].amount;

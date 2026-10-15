@@ -3,13 +3,14 @@ import { POS_LABEL } from "@/lib/config";
 import { loadDashboard, summarize, won } from "@/lib/dashboard";
 import { ymd } from "@/lib/demo";
 import { EVENT_TYPE_LABEL, eventStats, eventTotal } from "@/lib/events";
+import { loadMonth } from "@/lib/month";
 import { Bars, Head, Stars, TopBar, getScope, mmdd } from "@/app/ui";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home({ params }: { params: Promise<{ scope: string }> }) {
   const scope = await getScope(params);
-  const d = await loadDashboard(scope);
+  const [d, month] = await Promise.all([loadDashboard(scope), loadMonth(scope, ymd(new Date()).slice(0, 7))]);
   const { sales, pos, events, ranks, reviews, sns, tax, bank } = d;
   const today = ymd(new Date());
   const s = sales.data;
@@ -39,6 +40,18 @@ export default async function Home({ params }: { params: Promise<{ scope: string
                 <div className="value">{won(u.amount)}</div>
               </div>
             ))}
+          </div>
+        </section>
+
+        <section className="card">
+          <Head href={`${base}/expenses`} title="이번 달 손익" mode={month.expenseMode} />
+          <div className="tiles">
+            <div className="tile"><div className="label">매출</div><div className="value">{won(month.revenue)}</div></div>
+            <div className="tile"><div className="label">비용</div><div className="value down">-{won(month.expenseTotal)}</div></div>
+            <div className="tile"><div className="label">이익</div><div className={`value ${month.profit < 0 ? "warn" : ""}`}>{won(month.profit)}</div></div>
+            <Link href={`${base}/calendar`} className="tile" style={{ display: "block" }}>
+              <div className="label">매출 캘린더</div><div className="value" style={{ color: "var(--blue)" }}>📅 달력으로 보기 ›</div>
+            </Link>
           </div>
         </section>
 

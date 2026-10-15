@@ -1,7 +1,7 @@
 // 매출·입금, 포스, 계좌, 세금 데이터.
 // CODEF·포스사 연동 전까지는 샘플 데이터를 보여주고, 어떤 설정이 필요한지 안내한다.
 import { POS_LABEL, type Store } from "../config";
-import { demoBank, demoCardSales, demoPos, demoTax } from "../demo";
+import { demoBank, demoCardSales, demoDailyAmount, demoPos, demoTax } from "../demo";
 import type { BankTx, CardSales, PosSummary, SourceResult, TaxSummary } from "../types";
 import { codefConfigured } from "./codef";
 
@@ -31,4 +31,14 @@ export async function getBank(): Promise<SourceResult<BankTx[]>> {
 
 export async function getTax(): Promise<SourceResult<TaxSummary>> {
   return { mode: "demo", data: demoTax(), note: `홈택스 (법인) · ${CODEF_NOTE}` };
+}
+
+// 기간별 일 매출 (캘린더·손익용)
+export async function getDailySales(store: Store, from: string, to: string): Promise<SourceResult<{ date: string; amount: number }[]>> {
+  const days: { date: string; amount: number }[] = [];
+  for (let d = new Date(`${from}T00:00:00Z`); d.toISOString().slice(0, 10) <= to; d.setUTCDate(d.getUTCDate() + 1)) {
+    const date = d.toISOString().slice(0, 10);
+    days.push({ date, amount: demoDailyAmount(store, date) });
+  }
+  return { mode: "demo", data: days, note: `여신금융협회 카드매출 · ${CODEF_NOTE}` };
 }
